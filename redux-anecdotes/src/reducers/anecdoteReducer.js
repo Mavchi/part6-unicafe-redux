@@ -1,4 +1,3 @@
-import axios from 'axios'
 import anecdoteService from '../services/anecdotes'
 
 const reducer = (state = [], action) => {
@@ -7,11 +6,7 @@ const reducer = (state = [], action) => {
       return action.data
     case 'VOTE':
       const id = action.data.id
-      const anecdote = state.find(a => a.id === id)
-      const changed_anecdote = { ...anecdote }
-      changed_anecdote.votes += 1
-
-      return state.map(a => a.id !== id ? a : changed_anecdote)
+      return state.map(a => a.id !== id ? a : action.data)
     case 'NEW_ANECDOTE':
       return state.concat(action.data)
     default:
@@ -39,10 +34,14 @@ export const createAnecdote = (content) => {
   }
 }
 
-export const createVote = (id) => {
-  return {
-    type: 'VOTE',
-    data: { id }
+export const createVote = (anecdote) => {
+  return async dispatch => {
+    const newAnecdote = await anecdoteService.update({ ...anecdote, votes: anecdote.votes+1})
+    //console.log(newAnecdote)
+    dispatch({
+      type: 'VOTE',
+      data: newAnecdote
+    })
   }
 }
 
